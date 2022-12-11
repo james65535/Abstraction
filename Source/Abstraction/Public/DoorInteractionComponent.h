@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Curves/CurveFloat.h"
 #include "DoorInteractionComponent.generated.h"
+
+
+
+class ATriggerBox;  // QUESTION: Does the UE4 build process link the library TriggerBox.H? Seems this is a build time optimisation technique
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -35,6 +40,12 @@ protected:
 	//FRotator DesiredRotation;
 	//FRotator DeltaRotation;
 	//FRotator FinalRotation;
+
+	UPROPERTY(EditAnywhere)
+	ATriggerBox* TriggerBox;
+
+	UPROPERTY(EditAnywhere)
+	FRuntimeFloatCurve OpenCurve;
 
 public:	
 	// Called every frame
