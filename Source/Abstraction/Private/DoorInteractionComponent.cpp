@@ -24,6 +24,7 @@ UDoorInteractionComponent::UDoorInteractionComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	DoorState = EDoorState::DS_CLOSED; 
 
 	// Setup console callback for debug toggle
 	CVarToggleDebugDoor.AsVariable()->SetOnChangedCallback(FConsoleVariableDelegate::CreateStatic((&UDoorInteractionComponent::OnDebugToggled)));
@@ -60,11 +61,14 @@ void UDoorInteractionComponent::BeginPlay()
 	
 	// GetOwner()->SetActorRotation(DesiredRotation);
 
+	/*
+	 *Removed mod4-6
 	UObjectiveWorldSubsystem* ObjectiveWorldSubsystem = GetWorld()->GetSubsystem<UObjectiveWorldSubsystem>();
 	if (ObjectiveWorldSubsystem)
 	{
 		OpenedEvent.AddUObject(ObjectiveWorldSubsystem, &UObjectiveWorldSubsystem::OnObjectiveCompleted);
 	}
+	*/
 }
 
 // Called every frame
@@ -93,9 +97,13 @@ void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		GetOwner()->SetActorRotation(CurrentRotation);
 		if (TimeRatio >= 1.0f)
 		{
+			OnDoorOpen();
+			/*
+			 *Removed mod4-6
 			DoorState = EDoorState::DS_OPEN;
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f,FColor::Yellow, TEXT("DoorOpened"));
 			OpenedEvent.Broadcast();
+			*/
 		}	
 		// Pre - setting up trigger curve in module 2
 		// CurrentRotationTime += DeltaTime;
@@ -112,5 +120,16 @@ void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		// }
 	}
 	DebugDraw();
+}
+
+void UDoorInteractionComponent::OnDoorOpen()
+{
+	DoorState = EDoorState::DS_OPEN;
+	UObjectiveComponent* ObjectiveComponent = GetOwner()->FindComponentByClass<UObjectiveComponent>();
+	if (ObjectiveComponent)
+	{
+		ObjectiveComponent->SetState(EObjectiveState::OS_Completed);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("DoorOpened"));
 }
 

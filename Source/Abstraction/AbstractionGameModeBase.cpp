@@ -15,6 +15,7 @@ void AAbstractionGameModeBase::StartPlay()
 		ObjectiveWorldSubsystem->DisplayObjectiveWidget();
 	}
 	
+	
 /*
  *This seems to have been removed mid lesson mod4-5 without explanation
 	if (ObjectiveWidget == nullptr)

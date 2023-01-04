@@ -33,7 +33,10 @@ public:
 	// UE Macro for callbacks - Delegates
 	DECLARE_EVENT(FDoorInteractionComponent, FOpened) // Question does this macro create the FOpened type? How?
 	FOpened& OnOpened() { return OpenedEvent;}
+
 	FOpened OpenedEvent;  // Question This probably has to come last due to order forced by macro
+
+	void OnDoorOpen();
 	
 	// Debug and console toggle
 	static void OnDebugToggled(IConsoleVariable* Var);
