@@ -19,8 +19,9 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
-	float TakeDamage(float Damage);
+	float TakeDamage(float Damage) { return CurrentHealth -= Damage;}
 	bool IsDead() { return CurrentHealth <= FLT_EPSILON; }
+	const float GetCurrentHealth() const { return CurrentHealth; }
 
 protected:
 	// Called when the game starts

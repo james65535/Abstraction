@@ -52,8 +52,7 @@ float AAbstractionPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent c
 	UE_LOG(LogTemp, Warning, TEXT("AAbstractionPlayerCharacter::TakeDamage Damage %.2f"), Damage);
 	if (HealthComponent)
 	{
-		float CurrentHealth = HealthComponent->TakeDamage(Damage);
-		UE_LOG(LogTemp,Warning,TEXT("Player health: %.2f"), CurrentHealth);
+		HealthComponent->TakeDamage(Damage);
 		if (HealthComponent->IsDead())
 		{
 			OnDeath(false);
@@ -61,6 +60,33 @@ float AAbstractionPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent c
 	}
 	return Damage;
 }
+
+const bool AAbstractionPlayerCharacter::IsAlive() const
+{
+	if (HealthComponent)
+	{
+		return !HealthComponent->IsDead();
+	}
+	return false;
+}
+
+const float AAbstractionPlayerCharacter::GetCurrentHealth() const
+{
+	if (HealthComponent)
+	{
+		return HealthComponent->GetCurrentHealth();
+	}
+	return 0.0f;
+}
+
+void AAbstractionPlayerCharacter::SetOnFire(float BaseDamage, float DamageTotalTime, float TakeDamageInterval)
+{
+	// if (DamageHandlerComponent)
+	// {
+	// 	DamageHandlerComponent->TakeFireDamage(BaseDamage, DamageTotalTime, TakeDamageInterval);
+	// }
+}
+
 
 void AAbstractionPlayerCharacter::OnDeath(bool IsFellOut)
 {

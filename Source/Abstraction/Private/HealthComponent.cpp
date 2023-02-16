@@ -29,10 +29,3 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	// ...
 }
-
-float UHealthComponent::TakeDamage(float Damage)
-{
-	CurrentHealth = CurrentHealth - Damage;
-	return CurrentHealth;
-}
-

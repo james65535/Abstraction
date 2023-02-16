@@ -26,6 +26,18 @@ public:
 	virtual void FellOutOfWorld(const UDamageType& dmgType) override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
+	UFUNCTION(BlueprintCallable)
+	const bool IsAlive() const;
+
+	UFUNCTION(BlueprintCallable)
+	const float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Abstraction")
+	void SetOnFire(float BaseDamage, float DamageTotalTime, float TakeDamageInterval);
+	
+
+	
 
 protected:
 	// Called when the game starts or when spawned

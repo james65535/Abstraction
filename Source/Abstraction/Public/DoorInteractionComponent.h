@@ -9,6 +9,9 @@
 
 class ATriggerBox;  // QUESTION: Does the UE4 build process link the library TriggerBox.H? Seems this is a build time optimisation technique
 
+UDELEGATE(Category = "Door")
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoorOpened);
+
 UENUM()
 enum class EDoorState
 {
@@ -31,12 +34,20 @@ public:
 
 	// Event for door being opened
 	// UE Macro for callbacks - Delegates
-	DECLARE_EVENT(FDoorInteractionComponent, FOpened) // Question does this macro create the FOpened type? How?
-	FOpened& OnOpened() { return OpenedEvent;}
+	//DECLARE_EVENT(UDoorInteractionComponent, FOpened) // Question does this macro create the FOpened type? How?
 
-	FOpened OpenedEvent;  // Question This probably has to come last due to order forced by macro
+	UPROPERTY(BlueprintAssignable, EditAnywhere, Category="Door")
+	FOnDoorOpened OnDoorOpenedEvent;
+	
+	//FOpened& OnOpened_Implementation() { return OpenedEvent;}
 
+	//UFUNCTION()
+	//FOnDoorOpened OpenedEvent;  // Question This probably has to come last due to order forced by macro
+
+	UFUNCTION()
 	void OnDoorOpen();
+
+	//void OnDoorOpen_Implementation();// { return OnDoorOpenedEvent;}
 	
 	// Debug and console toggle
 	static void OnDebugToggled(IConsoleVariable* Var);
@@ -54,7 +65,7 @@ protected:
 	ATriggerBox* TriggerBox;
 	
 	UPROPERTY(EditAnywhere)
-	FRotator DesiredRotation = FRotator::ZeroRotator;
+	FRotator DesiredRotation = FRotator(0.0f, 90.0f, 0.0f);
 
 	FRotator StartRotation = FRotator::ZeroRotator;
 	FRotator FinalRotation = FRotator::ZeroRotator;

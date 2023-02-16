@@ -51,8 +51,10 @@ void UDoorInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	StartRotation = GetOwner()->GetActorRotation();
-	FinalRotation = GetOwner()->GetActorRotation() = DesiredRotation;
+	FinalRotation = GetOwner()->GetActorRotation() + DesiredRotation;
 	CurrentRotationTime = 0.0f;
+
+	OnDoorOpenedEvent.AddDynamic(this, &ThisClass::OnDoorOpen);
 
 	// First Rotation Attempt
 	// DesiredRotation = FRotator(0.0f,90.0f,0.0f);
@@ -97,7 +99,7 @@ void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		GetOwner()->SetActorRotation(CurrentRotation);
 		if (TimeRatio >= 1.0f)
 		{
-			OnDoorOpen();
+			OnDoorOpenedEvent.Broadcast();
 			/*
 			 *Removed mod4-6
 			DoorState = EDoorState::DS_OPEN;
@@ -122,7 +124,7 @@ void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	DebugDraw();
 }
 
-void UDoorInteractionComponent::OnDoorOpen()
+void UDoorInteractionComponent:: OnDoorOpen()
 {
 	DoorState = EDoorState::DS_OPEN;
 	UObjectiveComponent* ObjectiveComponent = GetOwner()->FindComponentByClass<UObjectiveComponent>();
