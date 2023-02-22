@@ -43,7 +43,7 @@ void AFireDamageActor::Tick(float DeltaTime)
 			{
 				ParticleSystemComponent->ToggleActive();
 			}
-			DealDamageComponent->SetActive(!DealDamageComponent->IsActive());
+			DealDamageComponent->SetDamageActive(!DealDamageComponent->IsDamageActive());
 			CurrentTimer = 0.0f;	
 		}
 	}

@@ -4,7 +4,6 @@
 #include "DealDamage.h"
 #include "Components/CapsuleComponent.h"
 #include "AbstractionPlayerCharacter.h"
-#include "GameFramework/DamageType.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values for this component's properties
@@ -23,20 +22,18 @@ UDealDamage::UDealDamage()
 void UDealDamage::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
 
 void UDealDamage::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("UDealDamage::OnOverlapBegin"));
-
-	if (!bActive)
+	
+	if (OtherActor == GetOwner())
 	{
 		return;
 	}
-	if (OtherActor == GetOwner())
+
+	if (!IsDamageActive())
 	{
 		return;
 	}
@@ -44,10 +41,7 @@ void UDealDamage::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	AAbstractionPlayerCharacter* PlayerCharacter = Cast<AAbstractionPlayerCharacter>(OtherActor);
 	if (PlayerCharacter)
 	{
-		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-		FDamageEvent DamageEvent(ValidDamageTypeClass);
-
-		PlayerCharacter->TakeDamage(BaseDamage, DamageEvent, nullptr, GetOwner());
+		PlayerCharacter->SetOnFire(BaseDamage, DamageTotalTime, TakeDamageInterval);
 	}
 }
 

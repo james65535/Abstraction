@@ -9,9 +9,7 @@
 #include "ObjectiveComponent.h"
 #include "ObjectiveWorldSubsystem.generated.h"
 
-/**
- * Created in module 4-5
- */
+class UObjectiveHud;
 
 class UObjectiveComponent;
 
@@ -21,8 +19,7 @@ class ABSTRACTION_API UObjectiveWorldSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
-	void CreateObjectiveWidget(TSubclassOf<UUserWidget> ObjectiveWidgetClass);
-	void DisplayObjectiveWidget();
+	
 	void OnObjectiveCompleted();
 
 	UFUNCTION(BlueprintCallable)
@@ -34,10 +31,30 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveObjective(UObjectiveComponent* ObjectiveComponent);
 
-	void OnObjectiveStateChanged(UObjectiveComponent* ObjectiveComponent, EObjectiveState ObjectiveState);
-private:
-	UUserWidget* ObjectiveWidget = nullptr;
+	// Call this from maps that we want to display objectives(ie main menu will not call this function)
+	UFUNCTION(BlueprintCallable)
+	void OnMapStart();
 
+protected:
+
+	virtual void Deinitialize() override;
+
+	void CreateObjectiveWidgets();
+
+	void DisplayObjectiveWidget();
+	void RemoveObjectiveWidget();
+
+	void DisplayObjectivesCompleteWidget();
+	void RemoveObjectivesCompleteWidget();
+
+	uint32 GetCompletedObjectiveCount();
+
+	void OnObjectiveStateChanged(UObjectiveComponent* ObjectiveComponent, EObjectiveState ObjectiveState);
+
+private:
+	UObjectiveHud* ObjectiveWidget = nullptr;
+	UUserWidget* ObjectivesCompleteWidget = nullptr;
+	
 	//add remove them
 	//sign up for callback OnChanged
 	TArray<UObjectiveComponent*> Objectives;

@@ -7,9 +7,9 @@
 #include "Blueprint/UserWidget.h"
 #include "AbstractionGameModeBase.generated.h"
 
-/**
- * 
- */
+// To retrieve this object use below code
+// AGameModeBase* GameMode = Cast<AAbstractionGameModeBase>(World->GetAuthGameMode());
+
 UCLASS()
 class ABSTRACTION_API AAbstractionGameModeBase : public AGameModeBase
 {
@@ -19,6 +19,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> ObjectiveWidgetClass;
-	
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> ObjectivesCompleteWidgetClass;
 	
 };

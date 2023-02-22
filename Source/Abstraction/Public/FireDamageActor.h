@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	AFireDamageActor();
 
-	//virtual void PostActorCreated() override;
+//	virtual void PostActorCreated() override;
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

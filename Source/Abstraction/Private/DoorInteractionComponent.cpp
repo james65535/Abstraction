@@ -4,10 +4,11 @@
 #include "DoorInteractionComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
-#include "Engine/TriggerBox.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
 #include "ObjectiveWorldSubsystem.h"
+#include "InteractionComponent.h"
 
 // Float for setting relative position for door debug text
 constexpr float FLT_METERS(float meters){ return meters * 100.0f;}
@@ -27,7 +28,69 @@ UDoorInteractionComponent::UDoorInteractionComponent()
 	DoorState = EDoorState::DS_CLOSED; 
 
 	// Setup console callback for debug toggle
-	CVarToggleDebugDoor.AsVariable()->SetOnChangedCallback(FConsoleVariableDelegate::CreateStatic((&UDoorInteractionComponent::OnDebugToggled)));
+	CVarToggleDebugDoor.AsVariable()->SetOnChangedCallback(FConsoleVariableDelegate::CreateStatic(&UDoorInteractionComponent::OnDebugToggled));
+}
+
+void UDoorInteractionComponent::InteractionStart()
+{
+	Super::InteractionStart();
+	if (InteractingActor)
+	{
+		OpenDoor();
+	}
+}
+
+// Called when the game starts
+void UDoorInteractionComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	StartRotation = GetOwner()->GetActorRotation();
+	FinalRotation = GetOwner()->GetActorRotation() + DesiredRotation;
+	CurrentRotationTime = 0.0f;
+}
+
+void UDoorInteractionComponent::OpenDoor()
+{
+	if (IsOpen() || DoorState == EDoorState::DS_OPENING)
+	{
+		return;
+	}
+
+	DoorState = EDoorState::DS_OPENING;
+	CurrentRotationTime = 0.0f;
+}
+
+// Called every frame
+void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (DoorState == EDoorState::DS_OPENING)
+	{
+		CurrentRotationTime += DeltaTime;
+		const float TimeRatio = FMath::Clamp(CurrentRotationTime / TimeToRotate,0.0f,1.0f);
+		const float RotationAlpha = OpenCurve.GetRichCurve()->Eval(TimeRatio);
+		const FRotator CurrentRotation = FMath::Lerp(StartRotation,FinalRotation,RotationAlpha);
+		GetOwner()->SetActorRotation(CurrentRotation);
+		if (TimeRatio >= 1.0f)
+		{
+			OnDoorOpen();
+		}	
+	}
+}
+
+void UDoorInteractionComponent:: OnDoorOpen()
+{
+	DoorState = EDoorState::DS_OPEN;
+	UObjectiveComponent* ObjectiveComponent = GetOwner()->FindComponentByClass<UObjectiveComponent>();
+	if (ObjectiveComponent)
+	{
+		ObjectiveComponent->SetState(EObjectiveState::OS_Completed);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("DoorOpened"));
+
+	// Tell listeners that the interaction is successful
+	InteractionSuccess.Broadcast();
 }
 
 void UDoorInteractionComponent::OnDebugToggled(IConsoleVariable* Var)  // Question: is this variable here just to satisfy the interface fingerprint?
@@ -45,93 +108,3 @@ void UDoorInteractionComponent::DebugDraw()
 		DrawDebugString(GetWorld(), Offset, EnumAsString, GetOwner(), FColor::Blue, 0.0f);
 	}
 }
-
-// Called when the game starts
-void UDoorInteractionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	StartRotation = GetOwner()->GetActorRotation();
-	FinalRotation = GetOwner()->GetActorRotation() + DesiredRotation;
-	CurrentRotationTime = 0.0f;
-
-	OnDoorOpenedEvent.AddDynamic(this, &ThisClass::OnDoorOpen);
-
-	// First Rotation Attempt
-	// DesiredRotation = FRotator(0.0f,90.0f,0.0f);
-	// DeltaRotation = DesiredRotation - GetOwner()->GetActorRotation();
-	// FinalRotation = GetOwner()->GetActorRotation() + DesiredRotation;
-	
-	// GetOwner()->SetActorRotation(DesiredRotation);
-
-	/*
-	 *Removed mod4-6
-	UObjectiveWorldSubsystem* ObjectiveWorldSubsystem = GetWorld()->GetSubsystem<UObjectiveWorldSubsystem>();
-	if (ObjectiveWorldSubsystem)
-	{
-		OpenedEvent.AddUObject(ObjectiveWorldSubsystem, &UObjectiveWorldSubsystem::OnObjectiveCompleted);
-	}
-	*/
-}
-
-// Called every frame
-void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (DoorState == EDoorState::DS_CLOSED)
-	{
-		if (TriggerBox && GetWorld() && GetWorld()->GetFirstPlayerController()) 
-		{
-			APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-			if (PlayerPawn && TriggerBox->IsOverlappingActor(PlayerPawn))  
-			{
-				DoorState = EDoorState::DS_OPENING;
-				CurrentRotationTime = 0.0f;
-			}
-		}
-	}
-	else if (DoorState == EDoorState::DS_OPENING)
-	{
-		CurrentRotationTime += DeltaTime;
-		const float TimeRatio = FMath::Clamp(CurrentRotationTime / TimeToRotate,0.0f,1.0f);
-		const float RotationAlpha = OpenCurve.GetRichCurve()->Eval(TimeRatio);
-		const FRotator CurrentRotation = FMath::Lerp(StartRotation,FinalRotation,RotationAlpha);
-		GetOwner()->SetActorRotation(CurrentRotation);
-		if (TimeRatio >= 1.0f)
-		{
-			OnDoorOpenedEvent.Broadcast();
-			/*
-			 *Removed mod4-6
-			DoorState = EDoorState::DS_OPEN;
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f,FColor::Yellow, TEXT("DoorOpened"));
-			OpenedEvent.Broadcast();
-			*/
-		}	
-		// Pre - setting up trigger curve in module 2
-		// CurrentRotationTime += DeltaTime;
-		// const float RotationAlpha = FMath::Clamp(CurrentRotationTime / TimeToRotate,0.0f,1.0f);
-		// const FRotator CurrentRotation = FMath::Lerp(StartRotation,FinalRotation,RotationAlpha);
-		// GetOwner()->SetActorRotation(CurrentRotation);
-
-		// First Rotation Lesson in Module 2
-		// FRotator CurrentRotation = GetOwner()->GetActorRotation();
-		// if(!CurrentRotation.Equals(FinalRotation,5.0f))
-		// {
-		// 	CurrentRotation += DeltaRotation * DeltaTime;
-		// 	GetOwner()->SetActorRotation(CurrentRotation);
-		// }
-	}
-	DebugDraw();
-}
-
-void UDoorInteractionComponent:: OnDoorOpen()
-{
-	DoorState = EDoorState::DS_OPEN;
-	UObjectiveComponent* ObjectiveComponent = GetOwner()->FindComponentByClass<UObjectiveComponent>();
-	if (ObjectiveComponent)
-	{
-		ObjectiveComponent->SetState(EObjectiveState::OS_Completed);
-	}
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("DoorOpened"));
-}
-

@@ -25,11 +25,8 @@ public:
 
 	UCapsuleComponent* GetTriggerCapsule() const { return TriggerCapsule;}
 
-	bool IsActive() const { return bActive;}
-	void SetActive(bool IsActive) { bActive = IsActive;}
-
-	UPROPERTY(EditAnywhere, NoClear)
-	UCapsuleComponent* TriggerCapsule;
+	bool IsDamageActive() const { return bActive;}
+	void SetDamageActive(bool IsDamageActive) { bActive = IsDamageActive;}
 
 protected:
 	// Called when the game starts
@@ -38,7 +35,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BaseDamage = 50.0f;
 
-	bool bActive = true;
+	// Base Damage is distributed over this time
+	UPROPERTY(EditAnywhere)
+	float DamageTotalTime = 2.0f;
 
-		
+	// Time interval at which to apply damage
+	UPROPERTY(EditAnywhere)
+	float TakeDamageInterval = 0.5f;
+
+	UPROPERTY(EditAnywhere, NoClear)
+	UCapsuleComponent* TriggerCapsule;
+	
+	bool bActive = true;
 };

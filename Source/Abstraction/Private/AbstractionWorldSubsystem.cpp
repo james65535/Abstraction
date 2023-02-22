@@ -15,6 +15,6 @@ void UAbstractionWorldSubsystem::CreateObjectiveWidget(TSubclassOf<UUserWidget> 
 
 void UAbstractionWorldSubsystem::DisplayObjectiveWidget()
 {
-	ensureAlwaysMsgf(ObjectiveWidget, TEXT("UAbstractionWorldSubsystem::DisplayObjectiveWidget ObjectiveWidget is nullptr"));
+	//ensureAlwaysMsgf(ObjectiveWidget, TEXT("UAbstractionWorldSubsystem::DisplayObjectiveWidget ObjectiveWidget is nullptr"));
 }
 

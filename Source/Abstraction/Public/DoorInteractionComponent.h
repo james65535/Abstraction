@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "Curves/CurveFloat.h"
+#include "InteractionComponent.h"
 #include "DoorInteractionComponent.generated.h"
 
-class ATriggerBox;  // QUESTION: Does the UE4 build process link the library TriggerBox.H? Seems this is a build time optimisation technique
+class IConsoleVariable;
 
 UDELEGATE(Category = "Door")
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoorOpened);
@@ -22,7 +22,7 @@ enum class EDoorState
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ABSTRACTION_API UDoorInteractionComponent : public UActorComponent
+class ABSTRACTION_API UDoorInteractionComponent : public UInteractionComponent
 {
 	GENERATED_BODY()
 public:	
@@ -31,39 +31,30 @@ public:
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	// Event for door being opened
-	// UE Macro for callbacks - Delegates
-	//DECLARE_EVENT(UDoorInteractionComponent, FOpened) // Question does this macro create the FOpened type? How?
-
-	UPROPERTY(BlueprintAssignable, EditAnywhere, Category="Door")
-	FOnDoorOpened OnDoorOpenedEvent;
-	
-	//FOpened& OnOpened_Implementation() { return OpenedEvent;}
-
-	//UFUNCTION()
-	//FOnDoorOpened OpenedEvent;  // Question This probably has to come last due to order forced by macro
-
-	UFUNCTION()
-	void OnDoorOpen();
-
-	//void OnDoorOpen_Implementation();// { return OnDoorOpenedEvent;}
 	
 	// Debug and console toggle
 	static void OnDebugToggled(IConsoleVariable* Var);
-	void DebugDraw();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	
-	UPROPERTY(BlueprintReadOnly)
-	EDoorState DoorState = EDoorState::DS_CLOSED;
 
-	// Property Definitions for Door Opening
-	UPROPERTY(EditAnywhere)
-	ATriggerBox* TriggerBox;
-	
+	// TODO added virtual when this was not in the source code
+	// Bound to interaction input from player
+	virtual void InteractionStart() override;
+
+	// Request to open the door
+	UFUNCTION(BlueprintCallable)
+	void OpenDoor();
+
+	// Called internally when door has finished opening
+	void OnDoorOpen();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsOpen() { return DoorState == EDoorState::DS_OPEN; }
+
+	void DebugDraw();
+
 	UPROPERTY(EditAnywhere)
 	FRotator DesiredRotation = FRotator(0.0f, 90.0f, 0.0f);
 
@@ -74,12 +65,16 @@ protected:
 	float TimeToRotate = 1.0f;
 
 	float CurrentRotationTime = 0.0f;
-	
-	//  First Rotation Lesson in Mod2
-	//FRotator DesiredRotation;
-	//FRotator DeltaRotation;
-	//FRotator FinalRotation;
 
 	UPROPERTY(EditAnywhere)
 	FRuntimeFloatCurve OpenCurve;
+	
+	UPROPERTY(BlueprintReadOnly)
+	EDoorState DoorState = EDoorState::DS_CLOSED;
+
+// this might be removed
+	// Property Definitions for Door Opening
+//	UPROPERTY(EditAnywhere)
+//	ATriggerBox* TriggerBox;
+
 };
