@@ -2,6 +2,8 @@
 
 
 #include "AbstractionPlayerCharacter.h"
+
+#include "AbstractionPlayerController.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/DamageType.h"
 #include "HealthComponent.h"
@@ -47,14 +49,18 @@ void AAbstractionPlayerCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 
 void AAbstractionPlayerCharacter::FellOutOfWorld(const UDamageType& dmgType)
 {
-	OnDeath(true);
+	if (HealthComponent && !HealthComponent->IsDead())
+	{
+		HealthComponent->SetCurrentHealth(0.0f);
+		OnDeath(true);
+	}
 }
 
 float AAbstractionPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	UE_LOG(LogTemp, Warning, TEXT("AAbstractionPlayerCharacter::TakeDamage Damage %.2f"), Damage);
-	if (HealthComponent)
+	if (HealthComponent && !HealthComponent->IsDead())
 	{
 		HealthComponent->TakeDamage(Damage);
 		if (HealthComponent->IsDead())
@@ -92,6 +98,16 @@ void AAbstractionPlayerCharacter::SetOnFire(float BaseDamage, float DamageTotalT
 }
 
 void AAbstractionPlayerCharacter::OnDeath(bool IsFellOut)
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController)
+	{
+		PlayerController->DisableInput(PlayerController);
+	}
+	GetWorld()->GetTimerManager().SetTimer(RestartLevelTimerHandle, this, &AAbstractionPlayerCharacter::OnDeathTimerFinished, TimeRestartLevelAfterDeath, false);
+}
+
+void AAbstractionPlayerCharacter::OnDeathTimerFinished()
 {
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController)

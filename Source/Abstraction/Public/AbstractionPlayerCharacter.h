@@ -55,6 +55,9 @@ protected:
 	
 	void OnDeath(bool IsFellOut);
 
+	UFUNCTION()
+	void OnDeathTimerFinished();
+
 	// Input Bindings
 	void StartInteraction();
 	void StopInteraction();
@@ -64,4 +67,10 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UDamageHandlerComponent* DamageHandlerComponent;
+
+	UPROPERTY(EditAnywhere)
+	float TimeRestartLevelAfterDeath = 2.0f;
+
+	// Handle to manage the death timer
+	FTimerHandle RestartLevelTimerHandle;
 };

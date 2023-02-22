@@ -22,6 +22,7 @@ public:
 	float TakeDamage(float Damage) { return CurrentHealth -= Damage;}
 	bool IsDead() { return CurrentHealth <= FLT_EPSILON; }
 	const float GetCurrentHealth() const { return CurrentHealth; }
+	void SetCurrentHealth(float Health) { CurrentHealth = Health;}
 
 protected:
 	// Called when the game starts
