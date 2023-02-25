@@ -48,6 +48,15 @@ public:
 	// This can be an array later as needed
 	UPROPERTY(EditAnywhere)
 	UParticleSystemComponent* ParticleSystemComponent;
+
+	UFUNCTION(BlueprintCallable)
+	void HandleItemCollected();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ItemCollected();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int ItemsCollected = 0;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -73,4 +82,16 @@ protected:
 
 	// Handle to manage the death timer
 	FTimerHandle RestartLevelTimerHandle;
+	
+	APlayerController* PC;
+	
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	TSubclassOf<UCameraShakeBase> CamShake;
+
+	// Force Feedback Values
+	UPROPERTY(EditAnywhere, Category = "Force Feedback")
+	float ForceFeedbackIntensity = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Force Feedback")
+	float ForceFeedbackDuration = 1.0f;
 };

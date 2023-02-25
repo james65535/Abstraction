@@ -27,6 +27,8 @@ AAbstractionPlayerCharacter::AAbstractionPlayerCharacter(const FObjectInitialize
 void AAbstractionPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PC = GetWorld()->GetFirstPlayerController();
 }
 
 // Called every frame
@@ -104,7 +106,9 @@ void AAbstractionPlayerCharacter::OnDeath(bool IsFellOut)
 	{
 		PlayerController->DisableInput(PlayerController);
 	}
-	GetWorld()->GetTimerManager().SetTimer(RestartLevelTimerHandle, this, &AAbstractionPlayerCharacter::OnDeathTimerFinished, TimeRestartLevelAfterDeath, false);
+	GetWorld()->GetTimerManager().SetTimer(RestartLevelTimerHandle,
+		this, &AAbstractionPlayerCharacter::OnDeathTimerFinished, TimeRestartLevelAfterDeath,
+		false);
 }
 
 void AAbstractionPlayerCharacter::OnDeathTimerFinished()
@@ -124,5 +128,21 @@ void AAbstractionPlayerCharacter::StartInteraction()
 void AAbstractionPlayerCharacter::StopInteraction()
 {
 	OnInteractionCancel.Broadcast();
+}
+
+void AAbstractionPlayerCharacter::HandleItemCollected()
+{
+	ItemsCollected++;
+
+	// Play Effects here.
+
+	PC->PlayerCameraManager->StartCameraShake(CamShake, 1.0f);
+
+	PC->PlayDynamicForceFeedback(ForceFeedbackIntensity, ForceFeedbackDuration,
+		true, false,
+		true, false,
+		EDynamicForceFeedbackAction::Start);
+
+	ItemCollected();
 }
 

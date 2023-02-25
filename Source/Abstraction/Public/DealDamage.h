@@ -28,6 +28,9 @@ public:
 	bool IsDamageActive() const { return bActive;}
 	void SetDamageActive(bool IsDamageActive) { bActive = IsDamageActive;}
 
+	UPROPERTY(EditAnywhere, NoClear)
+	UCapsuleComponent* TriggerCapsule;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -42,9 +45,6 @@ protected:
 	// Time interval at which to apply damage
 	UPROPERTY(EditAnywhere)
 	float TakeDamageInterval = 0.5f;
-
-	UPROPERTY(EditAnywhere, NoClear)
-	UCapsuleComponent* TriggerCapsule;
 	
 	bool bActive = true;
 };
