@@ -25,21 +25,21 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Door")
 	FOnInteractionSuccess InteractionSuccess;
 
-	UFUNCTION()
-	virtual void OnOverLapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	virtual void OnOverLapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	UCapsuleComponent* GetTriggerCapsule() const { return TriggerCapsule; }
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+	UFUNCTION()
+	virtual void OnOverLapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {};
+
+	UFUNCTION()
+	virtual void OnOverLapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {};
 
 	UFUNCTION(BlueprintCallable)
-	virtual void InteractionStart();
+	virtual void InteractionRequested() {};
 
 	UPROPERTY(EditAnywhere)
 	FText InteractionPrompt;
@@ -48,5 +48,7 @@ protected:
 	UCapsuleComponent* TriggerCapsule = nullptr;
 
 	AActor* InteractingActor = nullptr;
+	bool bActive = true;
+	FDelegateHandle InteractionBinding;
 		
 };

@@ -2,6 +2,8 @@
 
 
 #include "DoorInteractionComponent.h"
+
+#include "AbstractionPlayerCharacter.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
@@ -9,6 +11,8 @@
 #include "DrawDebugHelpers.h"
 #include "ObjectiveWorldSubsystem.h"
 #include "InteractionComponent.h"
+#include "Components/AudioComponent.h"
+#include "Components/TextRenderComponent.h"
 
 // Float for setting relative position for door debug text
 constexpr float FLT_METERS(float meters){ return meters * 100.0f;}
@@ -31,12 +35,23 @@ UDoorInteractionComponent::UDoorInteractionComponent()
 	CVarToggleDebugDoor.AsVariable()->SetOnChangedCallback(FConsoleVariableDelegate::CreateStatic(&UDoorInteractionComponent::OnDebugToggled));
 }
 
-void UDoorInteractionComponent::InteractionStart()
+void UDoorInteractionComponent::InteractionRequested()
 {
-	Super::InteractionStart();
 	if (InteractingActor)
 	{
-		OpenDoor();
+		bActive = false;
+		if (TextRenderComponent)
+		{
+			TextRenderComponent->SetText(InteractionPrompt);
+			TextRenderComponent->SetVisibility(false);
+		}
+
+		// TODO something not right here
+		AAbstractionPlayerCharacter * APC = Cast<AAbstractionPlayerCharacter>(InteractingActor);
+		if (APC)
+		{
+			APC->DoorOpenInteractionStarted(GetOwner());
+		}
 	}
 }
 
@@ -47,17 +62,14 @@ void UDoorInteractionComponent::BeginPlay()
 	StartRotation = GetOwner()->GetActorRotation();
 	FinalRotation = GetOwner()->GetActorRotation() + DesiredRotation;
 	CurrentRotationTime = 0.0f;
-}
 
-void UDoorInteractionComponent::OpenDoor()
-{
-	if (IsOpen() || DoorState == EDoorState::DS_OPENING)
+	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
+	if (!AudioComponent)
 	{
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("UDoorInteractionComponent::BeginPlay() Missing Audio Component"));
 	}
-
-	DoorState = EDoorState::DS_OPENING;
-	CurrentRotationTime = 0.0f;
+	
+	TextRenderComponent = GetOwner()->FindComponentByClass<UTextRenderComponent>();
 }
 
 // Called every frame
@@ -77,6 +89,22 @@ void UDoorInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 			OnDoorOpen();
 		}	
 	}
+	DebugDraw();
+}
+
+void UDoorInteractionComponent::OpenDoor()
+{
+	if (IsOpen() || DoorState == EDoorState::DS_OPENING)
+	{
+		return;
+	}
+
+	if (AudioComponent)
+	{
+		AudioComponent->Play();
+	}
+	DoorState = EDoorState::DS_OPENING;
+	CurrentRotationTime = 0.0f;
 }
 
 void UDoorInteractionComponent:: OnDoorOpen()
@@ -106,5 +134,38 @@ void UDoorInteractionComponent::DebugDraw()
 		FVector StartLocation = GetOwner()->GetActorLocation() + Offset;
 		FString EnumAsString = TEXT("Door State: ") + UEnum::GetDisplayValueAsText(DoorState).ToString();
 		DrawDebugString(GetWorld(), Offset, EnumAsString, GetOwner(), FColor::Blue, 0.0f);
+	}
+}
+
+void UDoorInteractionComponent::OnOverLapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UDoorInteractionComponent::OnOverlapBegin"));
+
+	if (InteractingActor || !bActive)
+	{
+		return;
+	}
+	
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		InteractingActor = OtherActor;
+		if (TextRenderComponent)
+		{
+			TextRenderComponent->SetText(InteractionPrompt);
+			TextRenderComponent->SetVisibility(true);
+		}
+	}
+}
+
+void UDoorInteractionComponent::OnOverLapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UDoorInteractionComponent::OnOverlapEnd"));
+	if (OtherActor == InteractingActor)
+	{
+		InteractingActor = nullptr;
+		if (TextRenderComponent)
+		{
+			TextRenderComponent->SetVisibility(false);
+		}
 	}
 }

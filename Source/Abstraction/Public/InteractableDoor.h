@@ -7,6 +7,7 @@
 #include "InteractableDoor.generated.h"
 
 class UDoorInteractionComponent;
+class UAudioComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoorOpen);
 
@@ -18,11 +19,12 @@ class ABSTRACTION_API AInteractableDoor : public AStaticMeshActor
 public:
 	AInteractableDoor();
 	virtual void BeginPlay() override;
-
-	float InteractionTime = 5.0f;
-
+	
 	UPROPERTY(BlueprintAssignable, Category = "Door")
 	FOnDoorOpen OnDoorOpen;
+	
+	UFUNCTION(BlueprintCallable)
+	void OpenDoor();
 
 protected:
 	UFUNCTION()
@@ -30,5 +32,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, NoClear)
 	UDoorInteractionComponent* DoorInteractionComponent;
+
+	UPROPERTY(EditAnywhere)
+	UAudioComponent* AudioComponent;
 	
 };

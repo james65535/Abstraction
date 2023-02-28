@@ -8,6 +8,7 @@
 #include "DoorInteractionComponent.generated.h"
 
 class IConsoleVariable;
+class UTextRenderComponent;
 
 UDELEGATE(Category = "Door")
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoorOpened);
@@ -35,17 +36,27 @@ public:
 	// Debug and console toggle
 	static void OnDebugToggled(IConsoleVariable* Var);
 
+	// Request to open the door
+	UFUNCTION(BlueprintCallable)
+	void OpenDoor();
+	
+	virtual void OnOverLapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
+	virtual void OnOverLapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+
+	UPROPERTY()
+	UTextRenderComponent* TextRenderComponent;
+
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	// TODO added virtual when this was not in the source code
 	// Bound to interaction input from player
-	virtual void InteractionStart() override;
-
-	// Request to open the door
-	UFUNCTION(BlueprintCallable)
-	void OpenDoor();
+	virtual void InteractionRequested() override;
 
 	// Called internally when door has finished opening
 	void OnDoorOpen();
@@ -71,10 +82,5 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly)
 	EDoorState DoorState = EDoorState::DS_CLOSED;
-
-// this might be removed
-	// Property Definitions for Door Opening
-//	UPROPERTY(EditAnywhere)
-//	ATriggerBox* TriggerBox;
 
 };

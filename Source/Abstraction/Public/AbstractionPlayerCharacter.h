@@ -10,8 +10,8 @@ class UHealthComponent;
 class UDamageHandlerComponent;
 class UParticleSystemComponent;
 
-DECLARE_MULTICAST_DELEGATE(FOnInteractionStart);
-DECLARE_MULTICAST_DELEGATE(FOnInteractionCancel);
+DECLARE_MULTICAST_DELEGATE(FInteractionStartRequest);
+DECLARE_MULTICAST_DELEGATE(FInteractionCancelRequest);
 
 UCLASS()
 class ABSTRACTION_API AAbstractionPlayerCharacter : public ACharacter
@@ -42,8 +42,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Abstraction")
 	void SetOnFire(float BaseDamage, float DamageTotalTime, float TakeDamageInterval);
 
-	FOnInteractionStart OnInteractionStart;
-	FOnInteractionCancel OnInteractionCancel;
+	FInteractionStartRequest OnInteractionStartRequested;
+	FInteractionCancelRequest OnInteractionCancelRequested;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DoorOpenInteractionStarted(AActor* InteractableActor);
 
 	// This can be an array later as needed
 	UPROPERTY(EditAnywhere)
@@ -68,8 +71,8 @@ protected:
 	void OnDeathTimerFinished();
 
 	// Input Bindings
-	void StartInteraction();
-	void StopInteraction();
+	void InteractionStartRequested();
+	void InteractionCancelRequested();
 
 	UPROPERTY(EditAnywhere)
 	UHealthComponent* HealthComponent;

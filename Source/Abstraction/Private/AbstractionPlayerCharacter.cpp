@@ -45,8 +45,8 @@ void AAbstractionPlayerCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 
 	// These functions fire off events
 	// Interaction component listens to them
-	Binding = &PlayerInputComponent->BindAction(FName("InteractionStart"), IE_Pressed, this, &AAbstractionPlayerCharacter::StartInteraction);
-	Binding = &PlayerInputComponent->BindAction(FName("InteractionCancel"), IE_Pressed, this, &AAbstractionPlayerCharacter::StopInteraction);
+	Binding = &PlayerInputComponent->BindAction(FName("InteractionStart"), IE_Pressed, this, &AAbstractionPlayerCharacter::InteractionStartRequested);
+	Binding = &PlayerInputComponent->BindAction(FName("InteractionCancel"), IE_Pressed, this, &AAbstractionPlayerCharacter::InteractionCancelRequested);
 }
 
 void AAbstractionPlayerCharacter::FellOutOfWorld(const UDamageType& dmgType)
@@ -120,14 +120,14 @@ void AAbstractionPlayerCharacter::OnDeathTimerFinished()
 	}
 }
 
-void AAbstractionPlayerCharacter::StartInteraction()
+void AAbstractionPlayerCharacter::InteractionStartRequested()
 {
-	OnInteractionStart.Broadcast();
+	OnInteractionStartRequested.Broadcast();
 }
 
-void AAbstractionPlayerCharacter::StopInteraction()
+void AAbstractionPlayerCharacter::InteractionCancelRequested()
 {
-	OnInteractionCancel.Broadcast();
+	OnInteractionCancelRequested.Broadcast();
 }
 
 void AAbstractionPlayerCharacter::HandleItemCollected()

@@ -24,6 +24,7 @@ void UObjectiveComponent::SetState(EObjectiveState NewState)
 
 void UObjectiveComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	// Register
 	UObjectiveWorldSubsystem* ObjectiveWorldSubsystem = GetWorld()->GetSubsystem<UObjectiveWorldSubsystem>();
 	if (ObjectiveWorldSubsystem)
